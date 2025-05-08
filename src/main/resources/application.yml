@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: auth_route
+          uri: http://localhost:8083
+          predicates:
+            - Path=/auth/**
+        - id: admin_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/admin/**
+        - id: user_route
+          uri: http://localhost:8082
+          predicates:
+            - Path=/user/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+server:
+  port: 8084 # changeable
