@@ -5,14 +5,27 @@ spring:
   cloud:
     gateway:
       routes:
+        # auth server
         - id: auth_route
           uri: http://localhost:8083
           predicates:
             - Path=/auth/**
+        # signup
+        - id: admin_signup_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/admin
+            - Method=POST
+          filters:
+            - RewritePath=/admin, /api/admin
+        # admin server
         - id: admin_route
           uri: http://localhost:8080
           predicates:
             - Path=/admin/**
+          filters:
+            - RewritePath=/admin/(?<segment>.*), /api/admin/$\{segment}
+        # user server (changeable)
         - id: user_route
           uri: http://localhost:8082
           predicates:
@@ -20,7 +33,7 @@ spring:
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOrigins: "http://localhost:*"
             allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true
