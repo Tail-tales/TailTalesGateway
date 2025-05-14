@@ -10,6 +10,11 @@ spring:
           uri: http://localhost:8083
           predicates:
             - Path=/auth/**
+        # social login
+        - id: oauth2_auth_route
+          uri: http://localhost:8083
+          predicates:
+            - Path=/oauth2/authorization/**
         # signup
         - id: admin_signup_route
           uri: http://localhost:8080
