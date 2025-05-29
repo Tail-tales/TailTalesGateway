@@ -50,6 +50,12 @@ spring:
             - Path=/api/user/**
           # filters:
 
+        # image Service API
+        - id: image_api_route
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/upload/**
+
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
