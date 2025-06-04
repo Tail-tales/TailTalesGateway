@@ -52,7 +52,7 @@ spring:
 
         # image Service API
         - id: image_api_route
-          uri: http://localhost:8085
+          uri: ${IMAGE_SERVER_URL:http://localhost:8085}
           predicates:
             - Path=/api/upload/**
 
