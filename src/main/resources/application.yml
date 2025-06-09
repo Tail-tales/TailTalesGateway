@@ -5,36 +5,56 @@ spring:
   cloud:
     gateway:
       routes:
-        # auth server
-        - id: auth_route
-          uri: http://localhost:8083
+        # AUTH-SERVER로 가는 모든 /auth/admin/** 경로
+        # (로그인, 중복확인, 토큰 갱신 등)
+        - id: admin_auth_route
+          uri: ${AUTH_SERVER_URL:http://localhost:8083}
           predicates:
-            - Path=/auth/**
-        # social login
+            - Path=/auth/admin/** # 게이트웨이 외부 노출 경로
+          filters:
+            - RewritePath=/auth/admin/(?<segment>.*), /api/admin/auth/$\{segment} # 인증 서버 내부 경로
+
+        # AUTH-SERVER로 가는 관리자 회원가입
+        - id: admin_signup_route
+          uri: ${AUTH_SERVER_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/admin
+            - Method=POST # POST 요청만 해당
+          filters:
+            - RewritePath=/api/admin, /api/admin # 경로를 그대로 유지
+
+        # ADMIN-SERVER로 가는 모든 /api/admin/** 경로
+        - id: admin_api_route
+          uri: ${ADMIN_SERVER_URL:http://localhost:8080}
+          predicates:
+            - Path=/api/admin/** # 게이트웨이 외부 노출 경로
+
+        # User Authentication API
+        - id: user_auth_route
+          uri: ${AUTH_SERVER_URL:http://localhost:8083}
+          predicates:
+            - Path=/auth/user/**
+          filters:
+            - RewritePath=/auth/user/(?<segment>.*), /api/user/auth/$\{segment}
+
+        # Social Login
         - id: oauth2_auth_route
-          uri: http://localhost:8083
+          uri: ${AUTH_SERVER_URL:http://localhost:8083}
           predicates:
             - Path=/oauth2/authorization/**
-        # signup
-        - id: admin_signup_route
-          uri: http://localhost:8080
+
+        # User Server API
+        - id: user_api_route
+          uri: ${USER_SERVER_URL:http://localhost:8082}
           predicates:
-            - Path=/admin
-            - Method=POST
-          filters:
-            - RewritePath=/admin, /api/admin
-        # admin server
-        - id: admin_route
-          uri: http://localhost:8080
+            - Path=/api/user/**
+          # filters:
+
+        # image Service API
+        - id: image_api_route
+          uri: ${IMAGE_SERVER_URL:http://localhost:8085}
           predicates:
-            - Path=/admin/**
-          filters:
-            - RewritePath=/admin/(?<segment>.*), /api/admin/$\{segment}
-        # user server (changeable)
-        - id: user_route
-          uri: http://localhost:8082
-          predicates:
-            - Path=/user/**
+            - Path=/api/upload/**
 
 logging:
   level:
@@ -42,4 +62,4 @@ logging:
     org.springframework.web.reactive.function.client: TRACE
 
 server:
-  port: 8084 # changeable
+  port: 8084
